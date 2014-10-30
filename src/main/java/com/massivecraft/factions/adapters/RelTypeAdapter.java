@@ -8,11 +8,9 @@ import com.massivecraft.factions.struct.Rel;
 
 import java.lang.reflect.Type;
 
-public class RelTypeAdapter implements JsonDeserializer<Rel>
-{
-	@Override
-	public Rel deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
-	{
-		return Rel.parse(json.getAsString());
-	}
+public class RelTypeAdapter implements JsonDeserializer<Rel> {
+    @Override
+    public Rel deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        return Rel.parse(json.getAsString());
+    }
 }

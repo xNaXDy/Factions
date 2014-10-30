@@ -8,36 +8,33 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Deprecated
-public class PluginCapiListener implements Listener
-{
-	P p;
-	
-	Set<String> myChannelIds = new LinkedHashSet<String>();
-	
-	public PluginCapiListener(P p)
-	{
-		this.p = p;
-		
-		myChannelIds.add("faction");
-		myChannelIds.add("allies");
-	}
-	
-	private String replacePlayerTags(String format, FPlayer me, FPlayer you)
-	{
-		String meFactionTag = me.getChatTag(you);
-		format = format.replace("{ME_FACTIONTAG}",      meFactionTag.length() == 0 ? "" : meFactionTag);
-		format = format.replace("{ME_FACTIONTAG_PADR}", meFactionTag.length() == 0 ? "" : meFactionTag+" ");
-		format = format.replace("{ME_FACTIONTAG_PADL}", meFactionTag.length() == 0 ? "" : " "+meFactionTag);
-		format = format.replace("{ME_FACTIONTAG_PADB}", meFactionTag.length() == 0 ? "" : " "+meFactionTag+" ");
+public class PluginCapiListener implements Listener {
+    P p;
 
-		String youFactionTag = you.getChatTag(me);
-		format = format.replace("{YOU_FACTIONTAG}",      youFactionTag.length() == 0 ? "" : youFactionTag);
-		format = format.replace("{YOU_FACTIONTAG_PADR}", youFactionTag.length() == 0 ? "" : youFactionTag+" ");
-		format = format.replace("{YOU_FACTIONTAG_PADL}", youFactionTag.length() == 0 ? "" : " "+youFactionTag);
-		format = format.replace("{YOU_FACTIONTAG_PADB}", youFactionTag.length() == 0 ? "" : " "+youFactionTag+" ");
-		
-		return format;
-	}
+    Set<String> myChannelIds = new LinkedHashSet<String>();
+
+    public PluginCapiListener(P p) {
+        this.p = p;
+
+        myChannelIds.add("faction");
+        myChannelIds.add("allies");
+    }
+
+    private String replacePlayerTags(String format, FPlayer me, FPlayer you) {
+        String meFactionTag = me.getChatTag(you);
+        format = format.replace("{ME_FACTIONTAG}", meFactionTag.length() == 0 ? "" : meFactionTag);
+        format = format.replace("{ME_FACTIONTAG_PADR}", meFactionTag.length() == 0 ? "" : meFactionTag + " ");
+        format = format.replace("{ME_FACTIONTAG_PADL}", meFactionTag.length() == 0 ? "" : " " + meFactionTag);
+        format = format.replace("{ME_FACTIONTAG_PADB}", meFactionTag.length() == 0 ? "" : " " + meFactionTag + " ");
+
+        String youFactionTag = you.getChatTag(me);
+        format = format.replace("{YOU_FACTIONTAG}", youFactionTag.length() == 0 ? "" : youFactionTag);
+        format = format.replace("{YOU_FACTIONTAG_PADR}", youFactionTag.length() == 0 ? "" : youFactionTag + " ");
+        format = format.replace("{YOU_FACTIONTAG_PADL}", youFactionTag.length() == 0 ? "" : " " + youFactionTag);
+        format = format.replace("{YOU_FACTIONTAG_PADB}", youFactionTag.length() == 0 ? "" : " " + youFactionTag + " ");
+
+        return format;
+    }
 
     /*@EventHandler(priority = EventPriority.NORMAL)
     public void onListChannelsEvent(CAPIListChannelsEvent event)

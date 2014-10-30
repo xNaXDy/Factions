@@ -10,17 +10,14 @@ import com.massivecraft.factions.P;
  */
 
 @Deprecated
-public class EssentialsOldVersionFeatures
-{
-	private static EssentialsChat essChat;
+public class EssentialsOldVersionFeatures {
+    private static EssentialsChat essChat;
 
     @Deprecated
-	public static void integrateChat(EssentialsChat instance)
-	{
-		essChat = instance;
-		try
-		{
-			/*essChat.addEssentialsChatListener("Factions", new IEssentialsChatListener()
+    public static void integrateChat(EssentialsChat instance) {
+        essChat = instance;
+        try {
+            /*essChat.addEssentialsChatListener("Factions", new IEssentialsChatListener()
 			{
 				public boolean shouldHandleThisChat(AsyncPlayerChatEvent event)
 				{
@@ -34,19 +31,16 @@ public class EssentialsOldVersionFeatures
 			});
 			P.p.log("Found and will integrate chat with "+essChat.getDescription().getFullName());*/
             P.p.log("Failed EssentialsChat hook, Version unsupported!");
-		}
-		catch (NoSuchMethodError ex)
-		{
-			essChat = null;
-		}
-	}
+        } catch (NoSuchMethodError ex) {
+            essChat = null;
+        }
+    }
 
     @Deprecated
-	public static void unhookChat()
-	{
+    public static void unhookChat() {
 		/*if (essChat != null)
 		{
 			essChat.removeEssentialsChatListener("Factions");
 		}*/
-	}
+    }
 }

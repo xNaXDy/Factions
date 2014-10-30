@@ -8,11 +8,9 @@ import com.massivecraft.factions.struct.FPerm;
 
 import java.lang.reflect.Type;
 
-public class FPermTypeAdapter implements JsonDeserializer<FPerm>
-{
-	@Override
-	public FPerm deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
-	{
-		return FPerm.parse(json.getAsString());
-	}
+public class FPermTypeAdapter implements JsonDeserializer<FPerm> {
+    @Override
+    public FPerm deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        return FPerm.parse(json.getAsString());
+    }
 }

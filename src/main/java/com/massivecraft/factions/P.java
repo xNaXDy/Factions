@@ -35,328 +35,300 @@ import java.util.Set;
 import java.util.logging.Level;
 
 
-public class P extends MPlugin
-{
-	// Our single plugin instance
-	public static P p;
-	
-	// Listeners
-	public final FactionsPlayerListener playerListener;
-	public final FactionsChatListener chatListener;
-	public final FactionsEntityListener entityListener;
-	public final FactionsExploitListener exploitListener;
-	public final FactionsBlockListener blockListener;
-	public final FactionsServerListener serverListener;
-	public final FactionsAppearanceListener appearanceListener;
-	
-	// Persistance related
-	private boolean locked = false;
-	public boolean getLocked() {return this.locked;}
-	public void setLocked(boolean val) {this.locked = val; this.setAutoSave(val);}
-	private Integer AutoLeaveTask = null;
-	private Integer econLandRewardTaskID = null;
-	
-	// Commands
-	public FCmdRoot cmdBase;
-	public CmdAutoHelp cmdAutoHelp;
-	
-	public P()
-	{
-		p = this;
-		this.playerListener = new FactionsPlayerListener(this);
-		this.chatListener = new FactionsChatListener(this);
-		this.entityListener = new FactionsEntityListener(this);
-		this.exploitListener = new FactionsExploitListener();
-		this.blockListener = new FactionsBlockListener(this);
-		this.serverListener = new FactionsServerListener(this);
-		this.appearanceListener = new FactionsAppearanceListener(this);
-	}
+public class P extends MPlugin {
+    // Our single plugin instance
+    public static P p;
 
-	@Override
-	public void onEnable()
-	{
-		// bit of (apparently absolutely necessary) idiot-proofing for CB version support due to changed GSON lib package name
-		try
-		{
-			Class.forName("org.bukkit.craftbukkit.libs.com.google.gson.reflect.TypeToken");
-		}
-		catch (ClassNotFoundException ex)
-		{
-			this.log(Level.SEVERE, "GSON lib not found. Your CraftBukkit build is too old (< 1.3.2) or otherwise not compatible.");
-			this.suicide();
-			return;
-		}
+    // Listeners
+    public final FactionsPlayerListener playerListener;
+    public final FactionsChatListener chatListener;
+    public final FactionsEntityListener entityListener;
+    public final FactionsExploitListener exploitListener;
+    public final FactionsBlockListener blockListener;
+    public final FactionsServerListener serverListener;
+    public final FactionsAppearanceListener appearanceListener;
 
-		if ( ! preEnable()) return;
-		this.loadSuccessful = false;
+    // Persistance related
+    private boolean locked = false;
 
-		// Load Conf from disk
-		Conf.load();
-		FPlayers.i.loadFromDisc();
-		Factions.i.loadFromDisc();
-		Board.load();
-		
-		// Add Base Commands
-		this.cmdAutoHelp = new CmdAutoHelp();
-		this.cmdBase = new FCmdRoot();
+    public boolean getLocked() {
+        return this.locked;
+    }
 
-		EssentialsFeatures.setup();
-		SpoutFeatures.setup();
-		Econ.setup();
-		CapiFeatures.setup();
-		HerochatFeatures.setup();
-		LWCFeatures.setup();
-		
-		if(Conf.worldGuardChecking)
-		{
-			Worldguard.init(this);
-		}
+    public void setLocked(boolean val) {
+        this.locked = val;
+        this.setAutoSave(val);
+    }
 
-		// start up task which runs the autoLeaveAfterDaysOfInactivity routine
-		startAutoLeaveTask(false);
+    private Integer AutoLeaveTask = null;
+    private Integer econLandRewardTaskID = null;
 
-		// start up task which runs the econLandRewardRoutine
-		startEconLandRewardTask(false);
+    // Commands
+    public FCmdRoot cmdBase;
+    public CmdAutoHelp cmdAutoHelp;
 
-		// Register Event Handlers
-		getServer().getPluginManager().registerEvents(this.playerListener, this);
-		getServer().getPluginManager().registerEvents(this.chatListener, this);
-		getServer().getPluginManager().registerEvents(this.entityListener, this);
-		getServer().getPluginManager().registerEvents(this.exploitListener, this);
-		getServer().getPluginManager().registerEvents(this.blockListener, this);
-		getServer().getPluginManager().registerEvents(this.serverListener, this);
-		getServer().getPluginManager().registerEvents(this.appearanceListener, this);
+    public P() {
+        p = this;
+        this.playerListener = new FactionsPlayerListener(this);
+        this.chatListener = new FactionsChatListener(this);
+        this.entityListener = new FactionsEntityListener(this);
+        this.exploitListener = new FactionsExploitListener();
+        this.blockListener = new FactionsBlockListener(this);
+        this.serverListener = new FactionsServerListener(this);
+        this.appearanceListener = new FactionsAppearanceListener(this);
+    }
 
-		postEnable();
-		this.loadSuccessful = true;
-	}
-	
-	@Override
-	public GsonBuilder getGsonBuilder()
-	{
-		return new GsonBuilder()
-		.setPrettyPrinting()
-		.disableHtmlEscaping()
-		.excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.VOLATILE)
-		.registerTypeAdapter(LazyLocation.class, new LocationTypeAdapter())
-		.registerTypeAdapter(TerritoryAccess.class, new TerritoryAccess())
-		.registerTypeAdapter(Rel.class, new RelTypeAdapter())
-		.registerTypeAdapter(FPerm.class, new FPermTypeAdapter())
-		.registerTypeAdapter(FFlag.class, new FFlagTypeAdapter());
-	}
+    @Override
+    public void onEnable() {
+        // bit of (apparently absolutely necessary) idiot-proofing for CB version support due to changed GSON lib package name
+        try {
+            Class.forName("org.bukkit.craftbukkit.libs.com.google.gson.reflect.TypeToken");
+        } catch (ClassNotFoundException ex) {
+            this.log(Level.SEVERE, "GSON lib not found. Your CraftBukkit build is too old (< 1.3.2) or otherwise not compatible.");
+            this.suicide();
+            return;
+        }
 
-	@Override
-	public void onDisable()
-	{
-		// only save data if plugin actually completely loaded successfully
-		if (this.loadSuccessful)
-		{
-			Board.save();
-			Conf.save();
-		}
-		EssentialsFeatures.unhookChat();
-		if (AutoLeaveTask != null)
-		{
-			this.getServer().getScheduler().cancelTask(AutoLeaveTask);
-			AutoLeaveTask = null;
-		}
-		super.onDisable();
-	}
+        if (!preEnable()) return;
+        this.loadSuccessful = false;
 
-	public void startAutoLeaveTask(boolean restartIfRunning)
-	{
-		if (AutoLeaveTask != null)
-		{
-			if ( ! restartIfRunning) return;
-			this.getServer().getScheduler().cancelTask(AutoLeaveTask);
-		}
+        // Load Conf from disk
+        Conf.load();
+        FPlayers.i.loadFromDisc();
+        Factions.i.loadFromDisc();
+        Board.load();
 
-		if (Conf.autoLeaveRoutineRunsEveryXMinutes > 0.0)
-		{
-			long ticks = (long)(20 * 60 * Conf.autoLeaveRoutineRunsEveryXMinutes);
-			AutoLeaveTask = getServer().getScheduler().scheduleSyncRepeatingTask(this, new AutoLeaveTask(), ticks, ticks);
-		}
-	}
+        // Add Base Commands
+        this.cmdAutoHelp = new CmdAutoHelp();
+        this.cmdBase = new FCmdRoot();
 
-	public void startEconLandRewardTask(boolean restartIfRunning)
-	{
-		if (econLandRewardTaskID != null)
-		{
-			if (!restartIfRunning) return;
-			this.getServer().getScheduler().cancelTask(econLandRewardTaskID);
-		}
+        EssentialsFeatures.setup();
+        SpoutFeatures.setup();
+        Econ.setup();
+        CapiFeatures.setup();
+        HerochatFeatures.setup();
+        LWCFeatures.setup();
 
-		if (Conf.econEnabled &&
-			Conf.econLandRewardTaskRunsEveryXMinutes > 0.0 &&
-			Conf.econLandReward > 0.0)
-		{
-			long ticks = (long)(20 * 60 * Conf.econLandRewardTaskRunsEveryXMinutes);
-			econLandRewardTaskID = getServer().getScheduler().scheduleSyncRepeatingTask(this, new EconLandRewardTask(), ticks, ticks);
-		}
-	}
+        if (Conf.worldGuardChecking) {
+            Worldguard.init(this);
+        }
 
-	@Override
-	public void postAutoSave()
-	{
-		Board.save();
-		Conf.save();
-	}
-	
-	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] split)
-	{
-		this.cmdBase.execute(sender, new ArrayList<String>(Arrays.asList(split)));
-		return true;
-	}
+        // start up task which runs the autoLeaveAfterDaysOfInactivity routine
+        startAutoLeaveTask(false);
 
-	// -------------------------------------------- //
-	// Functions for other plugins to hook into
-	// -------------------------------------------- //
+        // start up task which runs the econLandRewardRoutine
+        startEconLandRewardTask(false);
 
-	// This value will be updated whenever new hooks are added
-	public int hookSupportVersion()
-	{
-		return 3;
-	}
+        // Register Event Handlers
+        getServer().getPluginManager().registerEvents(this.playerListener, this);
+        getServer().getPluginManager().registerEvents(this.chatListener, this);
+        getServer().getPluginManager().registerEvents(this.entityListener, this);
+        getServer().getPluginManager().registerEvents(this.exploitListener, this);
+        getServer().getPluginManager().registerEvents(this.blockListener, this);
+        getServer().getPluginManager().registerEvents(this.serverListener, this);
+        getServer().getPluginManager().registerEvents(this.appearanceListener, this);
 
-	// If another plugin is handling insertion of chat tags, this should be used to notify Factions
-	public void handleFactionTagExternally(boolean notByFactions)
-	{
-		Conf.chatTagHandledByAnotherPlugin = notByFactions;
-	}
+        postEnable();
+        this.loadSuccessful = true;
+    }
 
-	// Simply put, should this chat event be left for Factions to handle? For now, that means players with Faction Chat
-	// enabled or use of the Factions f command without a slash; combination of isPlayerFactionChatting() and isFactionsCommand()
-	
-	
-	public boolean shouldLetFactionsHandleThisChat(AsyncPlayerChatEvent event)
-	{
-		if (event == null) return false;
-		return (isPlayerFactionChatting(event.getPlayer()) || isFactionsCommand(event.getMessage()));
-	}
+    @Override
+    public GsonBuilder getGsonBuilder() {
+        return new GsonBuilder()
+                .setPrettyPrinting()
+                .disableHtmlEscaping()
+                .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.VOLATILE)
+                .registerTypeAdapter(LazyLocation.class, new LocationTypeAdapter())
+                .registerTypeAdapter(TerritoryAccess.class, new TerritoryAccess())
+                .registerTypeAdapter(Rel.class, new RelTypeAdapter())
+                .registerTypeAdapter(FPerm.class, new FPermTypeAdapter())
+                .registerTypeAdapter(FFlag.class, new FFlagTypeAdapter());
+    }
 
-	// Does player have Faction Chat enabled? If so, chat plugins should preferably not do channels,
-	// local chat, or anything else which targets individual recipients, so Faction Chat can be done
-	/**
-	 * @deprecated  As of release 1.8, there is no built in faction chat.
-	 */
-	public boolean isPlayerFactionChatting(Player player)
-	{
-		return false;
-	}
+    @Override
+    public void onDisable() {
+        // only save data if plugin actually completely loaded successfully
+        if (this.loadSuccessful) {
+            Board.save();
+            Conf.save();
+        }
+        EssentialsFeatures.unhookChat();
+        if (AutoLeaveTask != null) {
+            this.getServer().getScheduler().cancelTask(AutoLeaveTask);
+            AutoLeaveTask = null;
+        }
+        super.onDisable();
+    }
 
-	// Is this chat message actually a Factions command, and thus should be left alone by other plugins?
-	/**
-	 * @deprecated As of release 1.8.1 the normal Bukkit command-handling is used. 
-	 */
-	public boolean isFactionsCommand(String check)
-	{
-		return false;
-	}
+    public void startAutoLeaveTask(boolean restartIfRunning) {
+        if (AutoLeaveTask != null) {
+            if (!restartIfRunning) return;
+            this.getServer().getScheduler().cancelTask(AutoLeaveTask);
+        }
 
-	// Get a player's faction tag (faction name), mainly for usage by chat plugins for local/channel chat
-	public String getPlayerFactionTag(Player player)
-	{
-		return getPlayerFactionTagRelation(player, null);
-	}
+        if (Conf.autoLeaveRoutineRunsEveryXMinutes > 0.0) {
+            long ticks = (long) (20 * 60 * Conf.autoLeaveRoutineRunsEveryXMinutes);
+            AutoLeaveTask = getServer().getScheduler().scheduleSyncRepeatingTask(this, new AutoLeaveTask(), ticks, ticks);
+        }
+    }
 
-	// Same as above, but with relation (enemy/neutral/ally) coloring potentially added to the tag
-	public String getPlayerFactionTagRelation(Player speaker, Player listener)
-	{
-		String tag = "~";
+    public void startEconLandRewardTask(boolean restartIfRunning) {
+        if (econLandRewardTaskID != null) {
+            if (!restartIfRunning) return;
+            this.getServer().getScheduler().cancelTask(econLandRewardTaskID);
+        }
 
-		if (speaker == null)
-			return tag;
+        if (Conf.econEnabled &&
+                Conf.econLandRewardTaskRunsEveryXMinutes > 0.0 &&
+                Conf.econLandReward > 0.0) {
+            long ticks = (long) (20 * 60 * Conf.econLandRewardTaskRunsEveryXMinutes);
+            econLandRewardTaskID = getServer().getScheduler().scheduleSyncRepeatingTask(this, new EconLandRewardTask(), ticks, ticks);
+        }
+    }
 
-		FPlayer me = FPlayers.i.get(speaker);
-		if (me == null)
-			return tag;
+    @Override
+    public void postAutoSave() {
+        Board.save();
+        Conf.save();
+    }
 
-		// if listener isn't set, or config option is disabled, give back uncolored tag
-		if (listener == null || !Conf.chatParseTagsColored) {
-			tag = me.getChatTag().trim();
-		} else {
-			FPlayer you = FPlayers.i.get(listener);
-			if (you == null)
-				tag = me.getChatTag().trim();
-			else  // everything checks out, give the colored tag
-				tag = me.getChatTag(you).trim();
-		}
-		if (tag.isEmpty())
-			tag = "~";
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] split) {
+        this.cmdBase.execute(sender, new ArrayList<String>(Arrays.asList(split)));
+        return true;
+    }
 
-		return tag;
-	}
+    // -------------------------------------------- //
+    // Functions for other plugins to hook into
+    // -------------------------------------------- //
 
-	// Get a player's title within their faction, mainly for usage by chat plugins for local/channel chat
-	public String getPlayerTitle(Player player)
-	{
-		if (player == null)
-			return "";
+    // This value will be updated whenever new hooks are added
+    public int hookSupportVersion() {
+        return 3;
+    }
 
-		FPlayer me = FPlayers.i.get(player);
-		if (me == null)
-			return "";
+    // If another plugin is handling insertion of chat tags, this should be used to notify Factions
+    public void handleFactionTagExternally(boolean notByFactions) {
+        Conf.chatTagHandledByAnotherPlugin = notByFactions;
+    }
 
-		return me.getTitle().trim();
-	}
+    // Simply put, should this chat event be left for Factions to handle? For now, that means players with Faction Chat
+    // enabled or use of the Factions f command without a slash; combination of isPlayerFactionChatting() and isFactionsCommand()
 
-	// Get a list of all faction tags (names)
-	public Set<String> getFactionTags()
-	{
-		Set<String> tags = new HashSet<String>();
-		for (Faction faction : Factions.i.get())
-		{
-			tags.add(faction.getTag());
-		}
-		return tags;
-	}
 
-	// Get a list of all players in the specified faction
-	public Set<String> getPlayersInFaction(String factionTag)
-	{
-		Set<String> players = new HashSet<String>();
-		Faction faction = Factions.i.getByTag(factionTag);
-		if (faction != null)
-		{
-			for (FPlayer fplayer : faction.getFPlayers())
-			{
-				players.add(fplayer.getName());
-			}
-		}
-		return players;
-	}
+    public boolean shouldLetFactionsHandleThisChat(AsyncPlayerChatEvent event) {
+        if (event == null) return false;
+        return (isPlayerFactionChatting(event.getPlayer()) || isFactionsCommand(event.getMessage()));
+    }
 
-	// Get a list of all online players in the specified faction
-	public Set<String> getOnlinePlayersInFaction(String factionTag)
-	{
-		Set<String> players = new HashSet<String>();
-		Faction faction = Factions.i.getByTag(factionTag);
-		if (faction != null)
-		{
-			for (FPlayer fplayer : faction.getFPlayersWhereOnline(true))
-			{
-				players.add(fplayer.getName());
-			}
-		}
-		return players;
-	}
+    // Does player have Faction Chat enabled? If so, chat plugins should preferably not do channels,
+    // local chat, or anything else which targets individual recipients, so Faction Chat can be done
 
-	// check if player is allowed to build/destroy in a particular location
-	public boolean isPlayerAllowedToBuildHere(Player player, Location location)
-	{
-		return FactionsBlockListener.playerCanBuildDestroyBlock(player, location.getBlock(), "", true);
-	}
+    /**
+     * @deprecated As of release 1.8, there is no built in faction chat.
+     */
+    public boolean isPlayerFactionChatting(Player player) {
+        return false;
+    }
 
-	// check if player is allowed to interact with the specified block (doors/chests/whatever)
-	public boolean isPlayerAllowedToInteractWith(Player player, Block block)
-	{
-		return FactionsPlayerListener.canPlayerUseBlock(player, block, true);
-	}
+    // Is this chat message actually a Factions command, and thus should be left alone by other plugins?
 
-	// check if player is allowed to use a specified item (flint&steel, buckets, etc) in a particular location
-	public boolean isPlayerAllowedToUseThisHere(Player player, Location location, Material material)
-	{
-		return FactionsPlayerListener.playerCanUseItemHere(player, location, material, true);
-	}
+    /**
+     * @deprecated As of release 1.8.1 the normal Bukkit command-handling is used.
+     */
+    public boolean isFactionsCommand(String check) {
+        return false;
+    }
+
+    // Get a player's faction tag (faction name), mainly for usage by chat plugins for local/channel chat
+    public String getPlayerFactionTag(Player player) {
+        return getPlayerFactionTagRelation(player, null);
+    }
+
+    // Same as above, but with relation (enemy/neutral/ally) coloring potentially added to the tag
+    public String getPlayerFactionTagRelation(Player speaker, Player listener) {
+        String tag = "~";
+
+        if (speaker == null)
+            return tag;
+
+        FPlayer me = FPlayers.i.get(speaker);
+        if (me == null)
+            return tag;
+
+        // if listener isn't set, or config option is disabled, give back uncolored tag
+        if (listener == null || !Conf.chatParseTagsColored) {
+            tag = me.getChatTag().trim();
+        } else {
+            FPlayer you = FPlayers.i.get(listener);
+            if (you == null)
+                tag = me.getChatTag().trim();
+            else  // everything checks out, give the colored tag
+                tag = me.getChatTag(you).trim();
+        }
+        if (tag.isEmpty())
+            tag = "~";
+
+        return tag;
+    }
+
+    // Get a player's title within their faction, mainly for usage by chat plugins for local/channel chat
+    public String getPlayerTitle(Player player) {
+        if (player == null)
+            return "";
+
+        FPlayer me = FPlayers.i.get(player);
+        if (me == null)
+            return "";
+
+        return me.getTitle().trim();
+    }
+
+    // Get a list of all faction tags (names)
+    public Set<String> getFactionTags() {
+        Set<String> tags = new HashSet<String>();
+        for (Faction faction : Factions.i.get()) {
+            tags.add(faction.getTag());
+        }
+        return tags;
+    }
+
+    // Get a list of all players in the specified faction
+    public Set<String> getPlayersInFaction(String factionTag) {
+        Set<String> players = new HashSet<String>();
+        Faction faction = Factions.i.getByTag(factionTag);
+        if (faction != null) {
+            for (FPlayer fplayer : faction.getFPlayers()) {
+                players.add(fplayer.getName());
+            }
+        }
+        return players;
+    }
+
+    // Get a list of all online players in the specified faction
+    public Set<String> getOnlinePlayersInFaction(String factionTag) {
+        Set<String> players = new HashSet<String>();
+        Faction faction = Factions.i.getByTag(factionTag);
+        if (faction != null) {
+            for (FPlayer fplayer : faction.getFPlayersWhereOnline(true)) {
+                players.add(fplayer.getName());
+            }
+        }
+        return players;
+    }
+
+    // check if player is allowed to build/destroy in a particular location
+    public boolean isPlayerAllowedToBuildHere(Player player, Location location) {
+        return FactionsBlockListener.playerCanBuildDestroyBlock(player, location.getBlock(), "", true);
+    }
+
+    // check if player is allowed to interact with the specified block (doors/chests/whatever)
+    public boolean isPlayerAllowedToInteractWith(Player player, Block block) {
+        return FactionsPlayerListener.canPlayerUseBlock(player, block, true);
+    }
+
+    // check if player is allowed to use a specified item (flint&steel, buckets, etc) in a particular location
+    public boolean isPlayerAllowedToUseThisHere(Player player, Location location, Material material) {
+        return FactionsPlayerListener.playerCanUseItemHere(player, location, material, true);
+    }
 }

@@ -22,96 +22,77 @@ import org.bukkit.plugin.Plugin;
 
 // silence deprecation warnings with this old interface
 @SuppressWarnings("deprecation")
-public class EssentialsFeatures
-{
-	private static EssentialsChat essChat;
-	private static IEssentials essentials;
+public class EssentialsFeatures {
+    private static EssentialsChat essChat;
+    private static IEssentials essentials;
 
-	public static void setup()
-	{
-		// integrate main essentials plugin
-		// TODO: this is the old Essentials method not supported in 3.0... probably needs to eventually be moved to EssentialsOldVersionFeatures and new method implemented
-		if (essentials == null)
-		{
-			Plugin ess = Bukkit.getPluginManager().getPlugin("Essentials");
-			if (ess != null && ess.isEnabled())
-				essentials = (IEssentials)ess;
-		}
+    public static void setup() {
+        // integrate main essentials plugin
+        // TODO: this is the old Essentials method not supported in 3.0... probably needs to eventually be moved to EssentialsOldVersionFeatures and new method implemented
+        if (essentials == null) {
+            Plugin ess = Bukkit.getPluginManager().getPlugin("Essentials");
+            if (ess != null && ess.isEnabled())
+                essentials = (IEssentials) ess;
+        }
 
-		// integrate chat
-		if (essChat != null) return;
+        // integrate chat
+        if (essChat != null) return;
 
-		Plugin test = Bukkit.getServer().getPluginManager().getPlugin("EssentialsChat");
-		if (test == null || !test.isEnabled()) return;
+        Plugin test = Bukkit.getServer().getPluginManager().getPlugin("EssentialsChat");
+        if (test == null || !test.isEnabled()) return;
 
-		essChat = (EssentialsChat)test;
+        essChat = (EssentialsChat) test;
 
-		// try newer Essentials 3.x integration method
-		try
-		{
-			Class.forName("com.earth2me.essentials.chat.EssentialsLocalChatEvent");
-			integrateChat(essChat);
-		}
-		catch (ClassNotFoundException ex)
-		{
-			// no? try older Essentials 2.x integration method
-			try
-			{
-				EssentialsOldVersionFeatures.integrateChat(essChat);
-			}
-			catch (NoClassDefFoundError ex2) { /* no known integration method, then */ }
-		}
-	}
+        // try newer Essentials 3.x integration method
+        try {
+            Class.forName("com.earth2me.essentials.chat.EssentialsLocalChatEvent");
+            integrateChat(essChat);
+        } catch (ClassNotFoundException ex) {
+            // no? try older Essentials 2.x integration method
+            try {
+                EssentialsOldVersionFeatures.integrateChat(essChat);
+            } catch (NoClassDefFoundError ex2) { /* no known integration method, then */ }
+        }
+    }
 
-	public static void unhookChat()
-	{
-		if (essChat == null) return;
+    public static void unhookChat() {
+        if (essChat == null) return;
 
-		try
-		{
-			EssentialsOldVersionFeatures.unhookChat();
-		}
-		catch (NoClassDefFoundError ex) {}
-	}
+        try {
+            EssentialsOldVersionFeatures.unhookChat();
+        } catch (NoClassDefFoundError ex) {
+        }
+    }
 
 
-	// return false if feature is disabled or Essentials isn't available
-	public static boolean handleTeleport(Player player, Location loc)
-	{
-		if ( ! Conf.homesTeleportCommandEssentialsIntegration || essentials == null) return false;
+    // return false if feature is disabled or Essentials isn't available
+    public static boolean handleTeleport(Player player, Location loc) {
+        if (!Conf.homesTeleportCommandEssentialsIntegration || essentials == null) return false;
 
-		Teleport teleport = (Teleport) essentials.getUser(player).getTeleport();
-		Trade trade = new Trade(Conf.econCostHome, essentials);
-		try
-		{
-			teleport.teleport(loc, trade);
-		}
-		catch (Exception e)
-		{
-			player.sendMessage(ChatColor.RED.toString()+e.getMessage());
-		}
-		return true;
-	}
+        Teleport teleport = (Teleport) essentials.getUser(player).getTeleport();
+        Trade trade = new Trade(Conf.econCostHome, essentials);
+        try {
+            teleport.teleport(loc, trade);
+        } catch (Exception e) {
+            player.sendMessage(ChatColor.RED.toString() + e.getMessage());
+        }
+        return true;
+    }
 
 
-	public static void integrateChat(EssentialsChat instance)
-	{
-		essChat = instance;
-		try
-		{
-			Bukkit.getServer().getPluginManager().registerEvents(new LocalChatListener(), P.p);
-			P.p.log("Found and will integrate chat with newer "+essChat.getDescription().getFullName());
-		}
-		catch (NoSuchMethodError ex)
-		{
-			essChat = null;
-		}
-	}
+    public static void integrateChat(EssentialsChat instance) {
+        essChat = instance;
+        try {
+            Bukkit.getServer().getPluginManager().registerEvents(new LocalChatListener(), P.p);
+            P.p.log("Found and will integrate chat with newer " + essChat.getDescription().getFullName());
+        } catch (NoSuchMethodError ex) {
+            essChat = null;
+        }
+    }
 
     @Deprecated
-	private static class LocalChatListener implements Listener
-	{
-		/*@EventHandler(priority = EventPriority.NORMAL)
+    private static class LocalChatListener implements Listener {
+        /*@EventHandler(priority = EventPriority.NORMAL)
 		public void onPlayerChat(EssentialsLocalChatEvent event)
 		{
 			Player speaker = event.getPlayer();
@@ -123,5 +104,5 @@ public class EssentialsFeatures
 			// NOTE: above doesn't do relation coloring. if/when we can get a local recipient list from EssentialsLocalChatEvent, we'll probably
 			// want to pass it on to FactionsPlayerListener.onPlayerChat(PlayerChatEvent event) rather than duplicating code
 		}*/
-	}
+    }
 }
