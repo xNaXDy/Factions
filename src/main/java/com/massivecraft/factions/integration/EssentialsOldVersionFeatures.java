@@ -18,7 +18,7 @@ public class EssentialsOldVersionFeatures {
         essChat = instance;
         try {
             /*essChat.addEssentialsChatListener("Factions", new IEssentialsChatListener()
-			{
+            {
 				public boolean shouldHandleThisChat(AsyncPlayerChatEvent event)
 				{
 					return P.p.shouldLetFactionsHandleThisChat(event);
@@ -38,7 +38,7 @@ public class EssentialsOldVersionFeatures {
 
     @Deprecated
     public static void unhookChat() {
-		/*if (essChat != null)
+        /*if (essChat != null)
 		{
 			essChat.removeEssentialsChatListener("Factions");
 		}*/

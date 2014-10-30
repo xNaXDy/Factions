@@ -93,7 +93,7 @@ public class EssentialsFeatures {
     @Deprecated
     private static class LocalChatListener implements Listener {
         /*@EventHandler(priority = EventPriority.NORMAL)
-		public void onPlayerChat(EssentialsLocalChatEvent event)
+        public void onPlayerChat(EssentialsLocalChatEvent event)
 		{
 			Player speaker = event.getPlayer();
 			String format = event.getFormat();

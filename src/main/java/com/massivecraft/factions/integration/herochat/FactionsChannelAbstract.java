@@ -214,7 +214,7 @@ public abstract class FactionsChannelAbstract implements Channel {
     }
 
 	/*@Override
-	public void processChat(ChannelChatEvent event)
+    public void processChat(ChannelChatEvent event)
 	{
 		final Player player = event.getSender().getPlayer();
 

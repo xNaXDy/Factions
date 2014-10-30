@@ -7,7 +7,12 @@ import java.util.List;
 
 public class PlayerEntity extends Entity {
     public Player getPlayer() {
-        return Bukkit.getPlayerExact(this.getId());
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            if (player.getUniqueId().toString().equals(this.getId())) {
+                return player;
+            }
+        }
+        return null;
     }
 
     public boolean isOnline() {
@@ -30,7 +35,9 @@ public class PlayerEntity extends Entity {
 
     public void sendMessage(String msg) {
         Player player = this.getPlayer();
-        if (player == null) return;
+        if (player == null) {
+            return;
+        }
         player.sendMessage(msg);
     }
 

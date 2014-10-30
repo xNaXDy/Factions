@@ -76,15 +76,11 @@ public class FactionsPlayerListener implements Listener {
         if (event.isCancelled()) return;
 
         // quick check to make sure player is moving between chunks; good performance boost
-        if
-                (
-                event.getFrom().getBlockX() >> 4 == event.getTo().getBlockX() >> 4
-                        &&
-                        event.getFrom().getBlockZ() >> 4 == event.getTo().getBlockZ() >> 4
-                        &&
-                        event.getFrom().getWorld() == event.getTo().getWorld()
-                )
+        if (event.getFrom().getBlockX() >> 4 == event.getTo().getBlockX() >> 4
+                && event.getFrom().getBlockZ() >> 4 == event.getTo().getBlockZ() >> 4
+                && event.getFrom().getWorld() == event.getTo().getWorld()) {
             return;
+        }
 
         Player player = event.getPlayer();
         FPlayer me = FPlayers.i.get(player);
@@ -147,7 +143,7 @@ public class FactionsPlayerListener implements Listener {
                 }
                 int count = attempt.increment();
                 if (count >= 10) {
-                    FPlayer me = FPlayers.i.get(name);
+                    FPlayer me = FPlayers.i.get(player);
                     me.msg("<b>Ouch, that is starting to hurt. You should give it a rest.");
                     player.damage(NumberConversions.floor((double) count / 10));
                 }
@@ -188,9 +184,9 @@ public class FactionsPlayerListener implements Listener {
     // TODO: Possibly incorporate pain build...
     public static boolean playerCanUseItemHere(Player player, Location loc, Material material, boolean justCheck) {
         String name = player.getName();
-        if (Conf.playersWhoBypassAllProtection.contains(name)) return true;
+        if (Conf.playersWhoBypassAllProtection.contains(player.getUniqueId())) return true;
 
-        FPlayer me = FPlayers.i.get(name);
+        FPlayer me = FPlayers.i.get(player);
         if (me.hasAdminMode()) return true;
         if (Conf.materialsEditTools.contains(material) && !FPerm.BUILD.has(me, loc, !justCheck)) return false;
         return true;
@@ -198,9 +194,9 @@ public class FactionsPlayerListener implements Listener {
 
     public static boolean canPlayerUseBlock(Player player, Block block, boolean justCheck) {
         String name = player.getName();
-        if (Conf.playersWhoBypassAllProtection.contains(name)) return true;
+        if (Conf.playersWhoBypassAllProtection.contains(player.getUniqueId())) return true;
 
-        FPlayer me = FPlayers.i.get(name);
+        FPlayer me = FPlayers.i.get(player);
         if (me.hasAdminMode()) return true;
         Location loc = block.getLocation();
         Material material = block.getType();
@@ -220,20 +216,8 @@ public class FactionsPlayerListener implements Listener {
         me.getPower();  // update power, so they won't have gained any while dead
 
         Location home = me.getFaction().getHome(); // TODO: WARNING FOR NPE HERE THE ORIO FOR RESPAWN SHOULD BE ASSIGNABLE FROM CONFIG.
-        if
-                (
-                Conf.homesEnabled
-                        &&
-                        Conf.homesTeleportToOnDeath
-                        &&
-                        home != null
-                        &&
-                        (
-                                Conf.homesRespawnFromNoPowerLossWorlds
-                                        ||
-                                        !Conf.worldsNoPowerLoss.contains(event.getPlayer().getWorld().getName())
-                        )
-                ) {
+        if (Conf.homesEnabled && Conf.homesTeleportToOnDeath && home != null &&
+                (Conf.homesRespawnFromNoPowerLossWorlds || !Conf.worldsNoPowerLoss.contains(event.getPlayer().getWorld().getName()))) {
             event.setRespawnLocation(home);
         }
     }

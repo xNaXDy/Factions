@@ -32,7 +32,7 @@ public abstract class FRelationCommand extends FCommand {
         if (them == null) return;
 
 		/*if ( ! them.isNormal())
-		{
+        {
 			msg("<b>Nope! You can't.");
 			return;
 		}*/

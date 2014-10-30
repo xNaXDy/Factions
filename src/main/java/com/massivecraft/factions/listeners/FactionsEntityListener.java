@@ -79,7 +79,7 @@ public class FactionsEntityListener implements Listener {
         }
         // TODO: Add a no damage at all flag??
         /*else if (Conf.safeZonePreventAllDamageToPlayers && isPlayerInSafeZone(event.getEntity()))
-		{
+        {
 			// Players can not take any damage in a Safe Zone
 			event.setCancelled(true);
 		}*/

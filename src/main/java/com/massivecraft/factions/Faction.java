@@ -30,6 +30,10 @@ public class Faction extends Entity implements EconomyParticipator {
     // Where string is a lowercase player name
     private Set<String> invites;
 
+    public Set<String> getInvites() {
+        return invites;
+    }
+
     public void invite(FPlayer fplayer) {
         this.invites.add(fplayer.getId().toLowerCase());
     }
@@ -186,7 +190,7 @@ public class Faction extends Entity implements EconomyParticipator {
     }
 
 	/*
-	public void addPermittedRelation(FPerm perm, Rel rel)
+    public void addPermittedRelation(FPerm perm, Rel rel)
 	{
 		Set<Rel> newPermittedRelations = EnumSet.noneOf(Rel.class);
 		newPermittedRelations.addAll(this.getPermittedRelations(perm));
