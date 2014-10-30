@@ -134,10 +134,18 @@ public class FLocation {
         return Math.sqrt(dx * dx + dz * dz);
     }
 
+    public double getDistanceSquaredTo(FLocation that) {
+        double dx = that.x - this.x;
+        double dz = that.z - this.z;
+        return dx * dx + dz * dz;
+    }
+
     //----------------------------------------------//
     // Some Geometry
     //----------------------------------------------//
     public Set<FLocation> getCircle(double radius) {
+        double radiusSquared = radius * radius;
+
         Set<FLocation> ret = new LinkedHashSet<FLocation>();
         if (radius <= 0) return ret;
 
@@ -149,7 +157,7 @@ public class FLocation {
         for (int x = xfrom; x <= xto; x++) {
             for (int z = zfrom; z <= zto; z++) {
                 FLocation potential = new FLocation(this.worldName, x, z);
-                if (this.getDistanceTo(potential) <= radius) {
+                if (this.getDistanceSquaredTo(potential) <= radiusSquared) {
                     ret.add(potential);
                 }
             }
