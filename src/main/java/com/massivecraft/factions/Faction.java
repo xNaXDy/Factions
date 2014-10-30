@@ -3,7 +3,6 @@ package com.massivecraft.factions;
 import com.massivecraft.factions.iface.EconomyParticipator;
 import com.massivecraft.factions.iface.RelationParticipator;
 import com.massivecraft.factions.integration.Econ;
-import com.massivecraft.factions.integration.SpoutFeatures;
 import com.massivecraft.factions.struct.FFlag;
 import com.massivecraft.factions.struct.FPerm;
 import com.massivecraft.factions.struct.Rel;
@@ -139,15 +138,17 @@ public class Faction extends Entity implements EconomyParticipator {
     }
 
     // FIELD: cape
+    @Deprecated
     private String cape;
 
+    @Deprecated
     public String getCape() {
         return cape;
     }
 
+    @Deprecated
     public void setCape(String val) {
         this.cape = val;
-        SpoutFeatures.updateCape(this, null);
     }
 
     // FIELD: powerBoost

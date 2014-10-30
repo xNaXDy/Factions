@@ -129,13 +129,13 @@ public class Econ {
         OfflinePlayer fromAcc;
         OfflinePlayer toAcc;
 
-        if(isUUID(from.getAccountId())) {
+        if (isUUID(from.getAccountId())) {
             fromAcc = Bukkit.getOfflinePlayer(UUID.fromString(from.getAccountId()));
         } else {
             fromAcc = Bukkit.getOfflinePlayer(from.getAccountId());
         }
 
-        if(isUUID(to.getAccountId())) {
+        if (isUUID(to.getAccountId())) {
             toAcc = Bukkit.getOfflinePlayer(UUID.fromString(to.getAccountId()));
         } else {
             toAcc = Bukkit.getOfflinePlayer(to.getAccountId());
@@ -207,7 +207,7 @@ public class Econ {
 
         OfflinePlayer acc;
 
-        if(isUUID(ep.getAccountId())) {
+        if (isUUID(ep.getAccountId())) {
             acc = Bukkit.getOfflinePlayer(UUID.fromString(ep.getAccountId()));
         } else {
             acc = Bukkit.getOfflinePlayer(ep.getAccountId());
@@ -234,7 +234,7 @@ public class Econ {
 
         OfflinePlayer acc;
 
-        if(isUUID(ep.getAccountId())) {
+        if (isUUID(ep.getAccountId())) {
             acc = Bukkit.getOfflinePlayer(UUID.fromString(ep.getAccountId()));
         } else {
             acc = Bukkit.getOfflinePlayer(ep.getAccountId());
@@ -335,7 +335,7 @@ public class Econ {
         return econ.getBalance(Bukkit.getOfflinePlayer(account));
     }
 
-    private static final DecimalFormat format =  new DecimalFormat("#,###");
+    private static final DecimalFormat format = new DecimalFormat("#,###");
 
     public static String getFriendlyBalance(UUID uuid) {
         return format.format(econ.getBalance(Bukkit.getOfflinePlayer(uuid)));
@@ -367,7 +367,7 @@ public class Econ {
     public static boolean isUUID(String uuid) {
         try {
             UUID.fromString(uuid);
-        } catch(IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ex) {
             return false;
         }
 

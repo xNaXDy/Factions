@@ -7,7 +7,10 @@ import com.massivecraft.factions.adapters.LocationTypeAdapter;
 import com.massivecraft.factions.adapters.RelTypeAdapter;
 import com.massivecraft.factions.cmd.CmdAutoHelp;
 import com.massivecraft.factions.cmd.FCmdRoot;
-import com.massivecraft.factions.integration.*;
+import com.massivecraft.factions.integration.Econ;
+import com.massivecraft.factions.integration.EssentialsFeatures;
+import com.massivecraft.factions.integration.LWCFeatures;
+import com.massivecraft.factions.integration.Worldguard;
 import com.massivecraft.factions.integration.capi.CapiFeatures;
 import com.massivecraft.factions.integration.herochat.HerochatFeatures;
 import com.massivecraft.factions.listeners.*;
@@ -46,7 +49,6 @@ public class P extends MPlugin {
     public final FactionsExploitListener exploitListener;
     public final FactionsBlockListener blockListener;
     public final FactionsServerListener serverListener;
-    public final FactionsAppearanceListener appearanceListener;
 
     // Persistance related
     private boolean locked = false;
@@ -75,7 +77,6 @@ public class P extends MPlugin {
         this.exploitListener = new FactionsExploitListener();
         this.blockListener = new FactionsBlockListener(this);
         this.serverListener = new FactionsServerListener(this);
-        this.appearanceListener = new FactionsAppearanceListener(this);
     }
 
     @Override
@@ -103,7 +104,6 @@ public class P extends MPlugin {
         this.cmdBase = new FCmdRoot();
 
         EssentialsFeatures.setup();
-        SpoutFeatures.setup();
         Econ.setup();
         CapiFeatures.setup();
         HerochatFeatures.setup();
@@ -126,7 +126,11 @@ public class P extends MPlugin {
         getServer().getPluginManager().registerEvents(this.exploitListener, this);
         getServer().getPluginManager().registerEvents(this.blockListener, this);
         getServer().getPluginManager().registerEvents(this.serverListener, this);
-        getServer().getPluginManager().registerEvents(this.appearanceListener, this);
+
+        saveDefaultConfig();
+
+        // since some other plugins execute commands directly through this command interface, provide it
+        this.getCommand(this.refCommand).setExecutor(this);
 
         postEnable();
         this.loadSuccessful = true;

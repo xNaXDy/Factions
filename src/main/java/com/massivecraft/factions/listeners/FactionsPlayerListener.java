@@ -1,7 +1,11 @@
 package com.massivecraft.factions.listeners;
 
 import com.massivecraft.factions.*;
-import com.massivecraft.factions.integration.SpoutFeatures;
+import com.massivecraft.factions.event.FPlayerJoinEvent;
+import com.massivecraft.factions.event.FPlayerLeaveEvent;
+import com.massivecraft.factions.scoreboards.FScoreboard;
+import com.massivecraft.factions.scoreboards.FTeamWrapper;
+import com.massivecraft.factions.scoreboards.sidebar.FDefaultSidebar;
 import com.massivecraft.factions.struct.FFlag;
 import com.massivecraft.factions.struct.FPerm;
 import com.massivecraft.factions.struct.Rel;
@@ -41,8 +45,6 @@ public class FactionsPlayerListener implements Listener {
 
         // Store player's current FLocation and notify them where they are
         me.setLastStoodAt(new FLocation(event.getPlayer().getLocation()));
-        if (!SpoutFeatures.updateTerritoryDisplay(me))
-            me.sendFactionHereMessage();
 
         // Set NoBoom timer update.
         Faction faction = me.getFaction();
@@ -50,6 +52,16 @@ public class FactionsPlayerListener implements Listener {
             //Notify our faction that the number of online players has changed.
             faction.updateLastOnlineTime();
         }
+
+        // Initialize the scoreboard
+        FScoreboard.init(me);
+        if (P.p.getConfig().getBoolean("scoreboard.default-enabled", false)) {
+            FScoreboard.get(me).setDefaultSidebar(new FDefaultSidebar(), P.p.getConfig().getInt("default-update-interval", 20));
+        }
+        FScoreboard.get(me).setSidebarVisibility(P.p.cmdBase.cmdScoreBoard.showBoard(me));
+
+        // Send player a message
+        me.sendFactionHereMessage();
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -61,14 +73,14 @@ public class FactionsPlayerListener implements Listener {
         // and update their last login time to point to when the logged off, for auto-remove routine
         me.setLastLoginTime(System.currentTimeMillis());
 
-        SpoutFeatures.playerDisconnect(me);
-
         // Set NoBoom timer update.
         Faction faction = me.getFaction();
         if (me.hasFaction() && Conf.protectOfflineFactionsFromExplosions) {
             //Notify our faction that the number of online players has changed.
             faction.updateLastOnlineTime();
         }
+
+        FScoreboard.remove(me);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -99,17 +111,14 @@ public class FactionsPlayerListener implements Listener {
         // Did we change "host"(faction)?
         boolean changedFaction = (Board.getFactionAt(from) != access.getHostFaction());
 
-        // let Spout handle most of this if it's available
-        boolean handledBySpout = changedFaction && SpoutFeatures.updateTerritoryDisplay(me);
-
         if (me.isMapAutoUpdating()) {
             me.sendMessage(Board.getMap(me.getFaction(), to, player.getLocation().getYaw()));
-        } else if (changedFaction && !handledBySpout) {
+        } else if (changedFaction) {
             me.sendFactionHereMessage();
         }
 
         // show access info message if needed
-        if (!handledBySpout && !SpoutFeatures.updateAccessInfo(me) && !access.isDefault()) {
+        if (!access.isDefault()) {
             if (access.subjectHasAccess(me))
                 me.msg("<g>You have access to this area.");
             else if (access.subjectAccessIsRestricted(me))
@@ -311,7 +320,7 @@ public class FactionsPlayerListener implements Listener {
             return;
         }
 
-        SpoutFeatures.playerDisconnect(badGuy);
+        FScoreboard.remove(badGuy);
 
         // if player was banned (not just kicked), get rid of their stored info
         if (Conf.removePlayerDataWhenBanned && event.getReason().equals("Banned by admin.")) {
@@ -335,5 +344,15 @@ public class FactionsPlayerListener implements Listener {
         if (blockFrom.equals(blockTo)) return;
 
         VisualizeUtil.clear(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    final public void onFactionJoin(FPlayerJoinEvent event) {
+        FTeamWrapper.applyUpdatesLater(event.getFaction());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFactionLeave(FPlayerLeaveEvent event) {
+        FTeamWrapper.applyUpdatesLater(event.getFaction());
     }
 }

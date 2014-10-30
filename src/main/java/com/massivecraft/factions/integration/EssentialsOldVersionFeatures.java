@@ -39,7 +39,7 @@ public class EssentialsOldVersionFeatures {
     @Deprecated
     public static void unhookChat() {
         /*if (essChat != null)
-		{
+        {
 			essChat.removeEssentialsChatListener("Factions");
 		}*/
     }

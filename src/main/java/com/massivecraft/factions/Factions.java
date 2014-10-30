@@ -7,6 +7,7 @@ import com.massivecraft.factions.struct.FPerm;
 import com.massivecraft.factions.struct.Rel;
 import com.massivecraft.factions.util.MiscUtil;
 import com.massivecraft.factions.zcore.persist.EntityCollection;
+import com.massivecraft.factions.zcore.util.TL;
 import com.massivecraft.factions.zcore.util.TextUtil;
 import org.bukkit.ChatColor;
 
@@ -26,14 +27,7 @@ public class Factions extends EntityCollection<Faction> {
     P p = P.p;
 
     private Factions() {
-        super
-                (
-                        Faction.class,
-                        new CopyOnWriteArrayList<Faction>(),
-                        new ConcurrentHashMap<String, Faction>(),
-                        new File(P.p.getDataFolder(), "factions.json"),
-                        P.p.gson
-                );
+        super(Faction.class, new CopyOnWriteArrayList<Faction>(), new ConcurrentHashMap<String, Faction>(), new File(P.p.getDataFolder(), "factions.json"), P.p.gson);
     }
 
     @Override
@@ -51,21 +45,21 @@ public class Factions extends EntityCollection<Faction> {
         //----------------------------------------------//
         if (!this.exists("0")) {
             Faction faction = this.create("0");
-            faction.setTag(ChatColor.DARK_GREEN + "Wilderness");
-            faction.setDescription("");
+            faction.setTag(TL.WILDERNESS.toString());
+            faction.setDescription(TL.WILDERNESS_DESCRIPTION.toString());
             this.setFlagsForWilderness(faction);
         }
         if (!this.exists("-1")) {
             Faction faction = this.create("-1");
-            faction.setTag("SafeZone");
-            faction.setDescription("Free from PVP and monsters");
+            faction.setTag(TL.SAFEZONE.toString());
+            faction.setDescription(TL.SAFEZONE_DESCRIPTION.toString());
 
             this.setFlagsForSafeZone(faction);
         }
         if (!this.exists("-2")) {
             Faction faction = this.create("-2");
-            faction.setTag("WarZone");
-            faction.setDescription("Not the safest place to be");
+            faction.setTag(TL.WARZONE.toString());
+            faction.setDescription(TL.WARZONE.toString());
             this.setFlagsForWarZone(faction);
         }
 
@@ -78,9 +72,9 @@ public class Factions extends EntityCollection<Faction> {
 
         // Remove troublesome " " from old pre-1.6.0 names
         if (safeZone != null && safeZone.getTag().contains(" "))
-            safeZone.setTag("SafeZone");
+            safeZone.setTag(TL.SAFEZONE.toString());
         if (warZone != null && warZone.getTag().contains(" "))
-            warZone.setTag("WarZone");
+            warZone.setTag(TL.WARZONE.toString());
 
         // Set Flags if they are not set already.
         if (wild != null && !wild.getFlag(FFlag.PERMANENT))

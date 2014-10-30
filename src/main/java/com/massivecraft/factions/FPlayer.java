@@ -6,8 +6,9 @@ import com.massivecraft.factions.iface.EconomyParticipator;
 import com.massivecraft.factions.iface.RelationParticipator;
 import com.massivecraft.factions.integration.Econ;
 import com.massivecraft.factions.integration.LWCFeatures;
-import com.massivecraft.factions.integration.SpoutFeatures;
 import com.massivecraft.factions.integration.Worldguard;
+import com.massivecraft.factions.scoreboards.FScoreboard;
+import com.massivecraft.factions.scoreboards.sidebar.FInfoSidebar;
 import com.massivecraft.factions.struct.FFlag;
 import com.massivecraft.factions.struct.FPerm;
 import com.massivecraft.factions.struct.Rel;
@@ -71,8 +72,6 @@ public class FPlayer extends PlayerEntity implements EconomyParticipator {
         if (oldFaction != null) oldFaction.removeFPlayer(this);
         faction.addFPlayer(this);
         this.factionId = faction.getId();
-        SpoutFeatures.updateTitle(this, null);
-        SpoutFeatures.updateTitle(null, this);
     }
 
     // FIELD: role
@@ -84,7 +83,6 @@ public class FPlayer extends PlayerEntity implements EconomyParticipator {
 
     public void setRole(Rel role) {
         this.role = role;
-        SpoutFeatures.updateTitle(this, null);
     }
 
     // FIELD: title
@@ -193,12 +191,6 @@ public class FPlayer extends PlayerEntity implements EconomyParticipator {
         this.role = Rel.MEMBER;
         this.title = "";
         this.autoClaimFor = null;
-
-        if (doSpoutUpdate) {
-            SpoutFeatures.updateTitle(this, null);
-            SpoutFeatures.updateTitle(null, this);
-            SpoutFeatures.updateCape(this.getPlayer(), null);
-        }
     }
 
     public void resetFactionData() {
@@ -458,15 +450,27 @@ public class FPlayer extends PlayerEntity implements EconomyParticipator {
     }
 
     public void sendFactionHereMessage() {
-        if (SpoutFeatures.updateTerritoryDisplay(this)) {
-            return;
+        Faction toShow = Board.getFactionAt(getLastStoodAt());
+        if (shouldShowScoreboard(toShow)) {
+            // Shows them the scoreboard instead of sending a message in chat. Will disappear after a few seconds.
+            FScoreboard.get(this).setTemporarySidebar(new FInfoSidebar(toShow));
+        } else {
+            String msg = P.p.txt.parse("<i>") + " ~ " + toShow.getTag(this);
+            if (toShow.getDescription().length() > 0) {
+                msg += " - " + toShow.getDescription();
+            }
+            this.sendMessage(msg);
         }
-        Faction factionHere = Board.getFactionAt(this.getLastStoodAt());
-        String msg = P.p.txt.parse("<i>") + " ~ " + factionHere.getTag(this);
-        if (factionHere.getDescription().length() > 0) {
-            msg += " - " + factionHere.getDescription();
-        }
-        this.sendMessage(msg);
+    }
+
+    /**
+     * Check if the scoreboard should be shown. Simple method to be used by above method.
+     *
+     * @param toShow Faction to be shown.
+     * @return true if should show, otherwise false.
+     */
+    private boolean shouldShowScoreboard(Faction toShow) {
+        return !toShow.getId().equals(-2) && !toShow.isNone() && !toShow.getId().equals(-1) && P.p.getConfig().contains("scoreboard.finfo") && P.p.getConfig().getBoolean("scoreboard.finfo-enabled", false) && P.p.cmdBase.cmdScoreBoard.showBoard(this);
     }
 
     // -------------------------------
@@ -640,7 +644,6 @@ public class FPlayer extends PlayerEntity implements EconomyParticipator {
         }
 
         Board.setFactionAt(forFaction, flocation);
-        SpoutFeatures.updateTerritoryDisplayLoc(flocation);
 
         if (Conf.logLandClaims)
             P.p.log(this.getName() + " claimed land at (" + flocation.getCoordString() + ") for the faction: " + forFaction.getTag());

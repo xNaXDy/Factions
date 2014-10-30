@@ -3,7 +3,7 @@ package com.massivecraft.factions.cmd;
 import com.massivecraft.factions.Conf;
 import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.event.FactionRelationEvent;
-import com.massivecraft.factions.integration.SpoutFeatures;
+import com.massivecraft.factions.scoreboards.FTeamWrapper;
 import com.massivecraft.factions.struct.FFlag;
 import com.massivecraft.factions.struct.Permission;
 import com.massivecraft.factions.struct.Rel;
@@ -84,8 +84,7 @@ public abstract class FRelationCommand extends FCommand {
             myFaction.msg("<i>This will have no effect while your faction is peaceful.");
         }
 
-        SpoutFeatures.updateTitle(myFaction, them);
-        SpoutFeatures.updateTitle(them, myFaction);
-        SpoutFeatures.updateTerritoryDisplayLoc(null);
+        FTeamWrapper.updatePrefixes(myFaction);
+        FTeamWrapper.updatePrefixes(them);
     }
 }

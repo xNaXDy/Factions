@@ -10,7 +10,6 @@ public class FCmdRoot extends FCommand {
     public CmdLeader cmdLeader = new CmdLeader();
     public CmdAutoClaim cmdAutoClaim = new CmdAutoClaim();
     public CmdAdmin cmdBypass = new CmdAdmin();
-    public CmdCape cmdCape = new CmdCape();
     public CmdClaim cmdClaim = new CmdClaim();
     public CmdConfig cmdConfig = new CmdConfig();
     public CmdCreate cmdCreate = new CmdCreate();
@@ -40,6 +39,7 @@ public class FCmdRoot extends FCommand {
     public CmdRelationTruce cmdRelationTruce = new CmdRelationTruce();
     public CmdReload cmdReload = new CmdReload();
     public CmdSaveAll cmdSaveAll = new CmdSaveAll();
+    public CmdScoreBoard cmdScoreBoard = new CmdScoreBoard();
     public CmdSeeChunk cmdSeeChunks = new CmdSeeChunk();
     public CmdSethome cmdSethome = new CmdSethome();
     public CmdShow cmdShow = new CmdShow();
@@ -79,7 +79,6 @@ public class FCmdRoot extends FCommand {
         this.addSubCommand(this.cmdTag);
         this.addSubCommand(this.cmdDemote);
         this.addSubCommand(this.cmdDescription);
-        this.addSubCommand(this.cmdCape);
         this.addSubCommand(this.cmdPerm);
         this.addSubCommand(this.cmdFlag);
         this.addSubCommand(this.cmdInvite);
@@ -97,6 +96,7 @@ public class FCmdRoot extends FCommand {
         this.addSubCommand(this.cmdTitle);
         this.addSubCommand(this.cmdMap);
         this.addSubCommand(this.cmdSeeChunks);
+        this.addSubCommand(this.cmdScoreBoard);
         this.addSubCommand(this.cmdDisband);
         this.addSubCommand(this.cmdRelationAlly);
         this.addSubCommand(this.cmdRelationEnemy);

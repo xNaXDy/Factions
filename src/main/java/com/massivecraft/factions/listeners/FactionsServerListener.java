@@ -1,7 +1,6 @@
 package com.massivecraft.factions.listeners;
 
 import com.massivecraft.factions.P;
-import com.massivecraft.factions.integration.SpoutFeatures;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -18,11 +17,11 @@ public class FactionsServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPluginDisable(PluginDisableEvent event) {
-        SpoutFeatures.setup();
+
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPluginEnable(PluginEnableEvent event) {
-        SpoutFeatures.setup();
+
     }
 }
