@@ -7,10 +7,13 @@ import com.massivecraft.factions.util.RelationUtil;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
+import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 
@@ -123,17 +126,32 @@ public class Econ {
             return false;
         }
 
+        OfflinePlayer fromAcc;
+        OfflinePlayer toAcc;
+
+        if(isUUID(from.getAccountId())) {
+            fromAcc = Bukkit.getOfflinePlayer(UUID.fromString(from.getAccountId()));
+        } else {
+            fromAcc = Bukkit.getOfflinePlayer(from.getAccountId());
+        }
+
+        if(isUUID(to.getAccountId())) {
+            toAcc = Bukkit.getOfflinePlayer(UUID.fromString(to.getAccountId()));
+        } else {
+            toAcc = Bukkit.getOfflinePlayer(to.getAccountId());
+        }
+
         // Transfer money
-        EconomyResponse erw = econ.withdrawPlayer(from.getAccountId(), amount);
+        EconomyResponse erw = econ.withdrawPlayer(fromAcc, amount);
 
         if (erw.transactionSuccess()) {
-            EconomyResponse erd = econ.depositPlayer(to.getAccountId(), amount);
+            EconomyResponse erd = econ.depositPlayer(toAcc, amount);
             if (erd.transactionSuccess()) {
                 if (notify) sendTransferInfo(invoker, from, to, amount);
                 return true;
             } else {
                 // transaction failed, refund account
-                econ.depositPlayer(from.getAccountId(), amount);
+                econ.depositPlayer(fromAcc, amount);
             }
         }
 
@@ -187,7 +205,15 @@ public class Econ {
     public static boolean hasAtLeast(EconomyParticipator ep, double delta, String toDoThis) {
         if (!shouldBeUsed()) return true;
 
-        if (!econ.has(ep.getAccountId(), delta)) {
+        OfflinePlayer acc;
+
+        if(isUUID(ep.getAccountId())) {
+            acc = Bukkit.getOfflinePlayer(UUID.fromString(ep.getAccountId()));
+        } else {
+            acc = Bukkit.getOfflinePlayer(ep.getAccountId());
+        }
+
+        if (!econ.has(acc, delta)) {
             if (toDoThis != null && !toDoThis.isEmpty())
                 ep.msg("<h>%s<i> can't afford <h>%s<i> %s.", ep.describeTo(ep, true), moneyString(delta), toDoThis);
             return false;
@@ -198,13 +224,20 @@ public class Econ {
     public static boolean modifyMoney(EconomyParticipator ep, double delta, String toDoThis, String forDoingThis) {
         if (!shouldBeUsed()) return false;
 
-        String acc = ep.getAccountId();
         String You = ep.describeTo(ep, true);
 
         if (delta == 0) {
             // no money actually transferred?
 //			ep.msg("<h>%s<i> didn't have to pay anything %s.", You, forDoingThis);  // might be for gains, might be for losses
             return true;
+        }
+
+        OfflinePlayer acc;
+
+        if(isUUID(ep.getAccountId())) {
+            acc = Bukkit.getOfflinePlayer(UUID.fromString(ep.getAccountId()));
+        } else {
+            acc = Bukkit.getOfflinePlayer(ep.getAccountId());
         }
 
         if (delta > 0) {
@@ -295,33 +328,49 @@ public class Econ {
     // -------------------------------------------- //
 
     public static boolean hasAccount(String name) {
-        return econ.hasAccount(name);
+        return econ.hasAccount(Bukkit.getOfflinePlayer(name));
     }
 
     public static double getBalance(String account) {
-        return econ.getBalance(account);
+        return econ.getBalance(Bukkit.getOfflinePlayer(account));
+    }
+
+    private static final DecimalFormat format =  new DecimalFormat("#,###");
+
+    public static String getFriendlyBalance(UUID uuid) {
+        return format.format(econ.getBalance(Bukkit.getOfflinePlayer(uuid)));
     }
 
     public static boolean setBalance(String account, double amount) {
         double current = econ.getBalance(account);
         if (current > amount)
-            return econ.withdrawPlayer(account, current - amount).transactionSuccess();
+            return econ.withdrawPlayer(Bukkit.getOfflinePlayer(account), current - amount).transactionSuccess();
         else
-            return econ.depositPlayer(account, amount - current).transactionSuccess();
+            return econ.depositPlayer(Bukkit.getOfflinePlayer(account), amount - current).transactionSuccess();
     }
 
     public static boolean modifyBalance(String account, double amount) {
         if (amount < 0)
-            return econ.withdrawPlayer(account, -amount).transactionSuccess();
+            return econ.withdrawPlayer(Bukkit.getOfflinePlayer(account), -amount).transactionSuccess();
         else
-            return econ.depositPlayer(account, amount).transactionSuccess();
+            return econ.depositPlayer(Bukkit.getOfflinePlayer(account), amount).transactionSuccess();
     }
 
     public static boolean deposit(String account, double amount) {
-        return econ.depositPlayer(account, amount).transactionSuccess();
+        return econ.depositPlayer(Bukkit.getOfflinePlayer(account), amount).transactionSuccess();
     }
 
     public static boolean withdraw(String account, double amount) {
-        return econ.withdrawPlayer(account, amount).transactionSuccess();
+        return econ.withdrawPlayer(Bukkit.getOfflinePlayer(account), amount).transactionSuccess();
+    }
+
+    public static boolean isUUID(String uuid) {
+        try {
+            UUID.fromString(uuid);
+        } catch(IllegalArgumentException ex) {
+            return false;
+        }
+
+        return true;
     }
 }
