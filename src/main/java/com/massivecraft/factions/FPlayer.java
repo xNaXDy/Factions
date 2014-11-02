@@ -8,6 +8,7 @@ import com.massivecraft.factions.integration.Econ;
 import com.massivecraft.factions.integration.LWCFeatures;
 import com.massivecraft.factions.integration.Worldguard;
 import com.massivecraft.factions.scoreboards.FScoreboard;
+import com.massivecraft.factions.scoreboards.sidebar.FDefaultSidebar;
 import com.massivecraft.factions.scoreboards.sidebar.FInfoSidebar;
 import com.massivecraft.factions.struct.FFlag;
 import com.massivecraft.factions.struct.FPerm;
@@ -452,8 +453,26 @@ public class FPlayer extends PlayerEntity implements EconomyParticipator {
     public void sendFactionHereMessage() {
         Faction toShow = Board.getFactionAt(getLastStoodAt());
         if (shouldShowScoreboard(toShow)) {
+            // Setup the scoreboard if it is not already.
+            if (FScoreboard.get(this) == null) {
+                // Initialize the scoreboard
+                FScoreboard.init(this);
+                if (P.p.getConfig().getBoolean("scoreboard.default-enabled", false)) {
+                    FScoreboard.get(this).setDefaultSidebar(new FDefaultSidebar(), P.p.getConfig().getInt("default-update-interval", 20));
+                }
+                FScoreboard.get(this).setSidebarVisibility(P.p.cmdBase.cmdScoreBoard.showBoard(this));
+            }
+
             // Shows them the scoreboard instead of sending a message in chat. Will disappear after a few seconds.
             FScoreboard.get(this).setTemporarySidebar(new FInfoSidebar(toShow));
+            // Shows the faction description via message
+            if (P.p.getConfig().getBoolean("scoreboard.default-enabled", false) && !toShow.isNone()) {
+                if (toShow.getDescription().length() > 0) {
+                    String msg = ChatColor.AQUA + "" + ChatColor.BOLD + "> " + ChatColor.RESET + P.p.txt.parse("<i>") + " ~ " + toShow.getTag(this);
+                    msg += toShow.getDescription();
+                    this.sendMessage(msg);
+                }
+            }
         } else {
             String msg = P.p.txt.parse("<i>") + " ~ " + toShow.getTag(this);
             if (toShow.getDescription().length() > 0) {
