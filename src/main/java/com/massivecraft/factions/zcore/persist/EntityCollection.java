@@ -3,6 +3,7 @@ package com.massivecraft.factions.zcore.persist;
 import com.google.gson.Gson;
 import com.massivecraft.factions.FPlayer;
 import com.massivecraft.factions.Faction;
+import com.massivecraft.factions.P;
 import com.massivecraft.factions.zcore.util.DiscUtil;
 import com.massivecraft.factions.zcore.util.TextUtil;
 import com.massivecraft.factions.zcore.util.UUIDFetcher;
@@ -195,10 +196,14 @@ public abstract class EntityCollection<E extends Entity> {
         }
 
         saveIsRunning = false;
+
         return this.saveCore(this.file, entitiesThatShouldBeSaved);
     }
 
     private boolean saveCore(File target, Map<String, E> entities) {
+        if (this.gson == null) {
+            this.gson = P.p.gson;
+        }
         return DiscUtil.writeCatch(target, this.gson.toJson(entities));
     }
 

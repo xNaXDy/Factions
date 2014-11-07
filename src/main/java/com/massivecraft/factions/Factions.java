@@ -27,7 +27,14 @@ public class Factions extends EntityCollection<Faction> {
     P p = P.p;
 
     private Factions() {
-        super(Faction.class, new CopyOnWriteArrayList<Faction>(), new ConcurrentHashMap<String, Faction>(), new File(P.p.getDataFolder(), "factions.json"), P.p.gson);
+        super
+             (
+                Faction.class,
+                new CopyOnWriteArrayList<Faction>(),
+                new ConcurrentHashMap<String, Faction>(),
+                new File(P.p.getDataFolder(), "factions.json"),
+                P.p.gson
+             );
     }
 
     @Override
