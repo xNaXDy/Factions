@@ -219,6 +219,10 @@ public abstract class EntityCollection<E extends Entity> {
     }
 
     private Map<String, E> loadCore() {
+        if (this.gson == null) {
+            this.gson = P.p.gson;
+        }
+
         if (!this.file.exists()) {
             return new HashMap<String, E>();
         }
