@@ -4,7 +4,7 @@
 
     <groupId>com.massivecraft</groupId>
     <artifactId>Factions</artifactId>
-    <version>1.6.9.5-U0.1.19-RC1</version>
+    <version>1.6.9.5-U0.1.20-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Factions</name>
@@ -76,10 +76,6 @@
             <version>1.9.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
             <exclusions>
-            	<exclusion>
-            		<artifactId>bungeecord-chat</artifactId>
-            		<groupId>net.md-5</groupId>
-            	</exclusion>
             	<exclusion>
             		<artifactId>persistence-api</artifactId>
             		<groupId>javax.persistence</groupId>
