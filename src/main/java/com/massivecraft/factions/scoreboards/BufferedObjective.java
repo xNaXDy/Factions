@@ -130,7 +130,7 @@ public class BufferedObjective {
 
                 try {
                     addEntryMethod.invoke(team, name);
-                } catch (ReflectiveOperationException ignored) {
+                } catch (Exception ignored) {
                 }
                 buffer.getScore(name).setScore(entry.getKey());
             } else {

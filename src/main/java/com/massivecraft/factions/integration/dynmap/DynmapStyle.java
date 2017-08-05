@@ -91,7 +91,6 @@ public class DynmapStyle {
     // UTIL
     // -------------------------------------------- //
 
-    @SafeVarargs
     public static <T> T coalesce(T... items) {
         for (T item : items) {
             if (item != null) {
