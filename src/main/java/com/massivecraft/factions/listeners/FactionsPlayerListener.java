@@ -14,6 +14,7 @@ import com.massivecraft.factions.zcore.persist.MemoryFPlayer;
 import com.massivecraft.factions.zcore.util.TL;
 import com.massivecraft.factions.zcore.util.TextUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -141,6 +142,29 @@ public class FactionsPlayerListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         FPlayer me = FPlayers.getInstance().getByPlayer(player);
+        
+        // factions fly
+        // TODO: add special permission? (e.g. ranks)
+        if(player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR)
+        {
+	        boolean ffly = false;
+	        if(me.getFaction().equals(Board.getInstance().getFactionAt(new FLocation(player.getLocation()))))
+	        {
+	        	ffly = true;
+	        	for(Player p: Bukkit.getOnlinePlayers())
+	        	{
+	        		// TODO: put this value in a config
+	        		if(p.getLocation().distance(player.getLocation()) <= 10D)
+	        		{
+	        			FPlayer other = FPlayers.getInstance().getByPlayer(p);
+	        			if(!other.getFaction().equals(me.getFaction()))
+	        				ffly = false;
+	        		}
+	        		
+	        	}
+	        }
+	        player.setAllowFlight(ffly);
+        }
 
         // clear visualization
         if (event.getFrom().getBlockX() != event.getTo().getBlockX() || event.getFrom().getBlockY() != event.getTo().getBlockY() || event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
